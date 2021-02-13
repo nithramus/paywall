@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      self.addEventListener("install", function (event) {
+        console.log("install");
+      });
+      self.addEventListener("fetch", (event) => {
+        console.log("in");
+      });
+
+      fetch(
+        "file:///home/nithramir/projets/paywall/Website-base.html"
+      ).then(() => console.log("ended"));
+    </script>
+  </head>
+  <body>
+    coucou
+  </body>
+</html>
