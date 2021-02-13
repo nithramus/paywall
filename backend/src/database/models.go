@@ -16,7 +16,7 @@ var UserModel *mongo.Collection
 type User struct {
 	ID primitive.ObjectID `bson:"_id,omitempty"`
 	Email string `json:"email"`
-	Password string `json:password`
+	Password string `json:"password"`
 }
 var DatabaseCtx context.Context
 
