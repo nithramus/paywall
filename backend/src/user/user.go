@@ -8,9 +8,23 @@ import (
 	"net/http"
 
 	"../database"
+	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type Claims struct {
+	Username string `json:"username"`
+	jwt.StandardClaims
+}
+
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Invalid Auth", http.StatusUnauthorized)
+		return
+		// next.ServeHTTP(w, r)
+	})
+}
 
 func Signup(w http.ResponseWriter, r *http.Request) {
 
@@ -42,7 +56,6 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("\ntets\n")
 	var user database.User
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -59,14 +72,33 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	database.UserModel.FindOne(database.DatabaseCtx, bson.M{"email": loggingUser.Email}).Decode(user)
+	err = database.UserModel.FindOne(database.DatabaseCtx, bson.M{"email": loggingUser.Email}).Decode(user)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if string(hashedPass) != user.Password && loggingUser.Email != user.Email {
 		log.Fatal(err)
-
 		http.Error(w, "bad password or email", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Fprintf(w, "")
-
+	// expirationTime := time.Now().Add(5 * time.Minute)
+	// claims := &Claims{
+	// 	Username: user.Email,
+	// 	StandardClaims: jwt.StandardClaims{
+	// 		// In JWT, the expiry time is expressed as unix milliseconds
+	// 		ExpiresAt: expirationTime.Unix(),
+	// 	},
+	// }
+	// token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	// tokenString, err := token.SignedString("etfetreztr")
+	// if err != nil {
+	// 	// If there is an error in creating the JWT return an internal server error
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	return
+	// }
+	// http.SetCookie(w, &http.Cookie{
+	// 	Name:    "token",
+	// 	Value:   tokenString,
+	// 	Expires: expirationTime,
+	// })
 }

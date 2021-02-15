@@ -41,12 +41,12 @@ func TestLogin(t *testing.T) {
 	http.Post("http://localhost:3000/signup", "application/json", bytes.NewBuffer(parameters))
 	resp, err := http.Post("http://localhost:3000/login", "application/json", bytes.NewBuffer(parameters))
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	ioutil.ReadAll(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
-		t.Fatal()
+		t.Fatal("statuscode")
 	}
 
 }
