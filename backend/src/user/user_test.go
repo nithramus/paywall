@@ -74,7 +74,7 @@ func TestLogin(t *testing.T) {
 	client := &http.Client{
 		Jar: jar,
 	}
-	client.Get("http://localhost:3000/articles")
+	client.Get("http://localhost:3000/articles/list")
 	ioutil.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatal("Wrong status code")

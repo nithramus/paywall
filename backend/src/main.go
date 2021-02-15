@@ -57,9 +57,10 @@ func handleRequest() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.Use(RecoverWrap)
 	user.GetUserRouter(myRouter)
+	s := myRouter.PathPrefix("/articles").Subrouter()
 
-	myRouter.Use(user.AuthMiddleware)
-	myRouter.HandleFunc("/articles", getArticle)
+	s.Use(user.AuthMiddleware)
+	s.HandleFunc("/articles/list", getArticle)
 	mw := LogMiddleware(myRouter)
 	http.ListenAndServe(":3000", mw)
 }
