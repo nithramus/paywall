@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"../database"
 	"github.com/dgrijalva/jwt-go"
@@ -20,9 +21,27 @@ type Claims struct {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Invalid Auth", http.StatusUnauthorized)
-		return
-		// next.ServeHTTP(w, r)
+		bearToken := r.Header.Get("token")
+		fmt.Println(bearToken)
+		claims := &Claims{}
+		tkn, err := jwt.ParseWithClaims(bearToken, claims, func(token *jwt.Token) (interface{}, error) {
+			return "eirueiztuiretuire", nil
+		})
+		if err != nil {
+			if err == jwt.ErrSignatureInvalid {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if !tkn.Valid {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		// http.Error(w, "Invalid Auth", http.StatusUnauthorized)
+
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -45,13 +64,11 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(errr)
 		http.Error(w, "Fail to hash password", http.StatusBadRequest)
 	}
-	fmt.Printf(string(hashedPass))
 	newUser.Password = string(hashedPass)
 	_, err = database.UserModel.InsertOne(database.DatabaseCtx, newUser)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Print("user added")
 	fmt.Fprintf(w, "")
 }
 
@@ -72,33 +89,32 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = database.UserModel.FindOne(database.DatabaseCtx, bson.M{"email": loggingUser.Email}).Decode(user)
+	err = database.UserModel.FindOne(database.DatabaseCtx, bson.M{"email": loggingUser.Email}).Decode(&user)
+
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
+
 	if string(hashedPass) != user.Password && loggingUser.Email != user.Email {
-		log.Fatal(err)
-		http.Error(w, "bad password or email", http.StatusBadRequest)
+		http.Error(w, "Bad password or email", http.StatusBadRequest)
 		return
 	}
-	// expirationTime := time.Now().Add(5 * time.Minute)
-	// claims := &Claims{
-	// 	Username: user.Email,
-	// 	StandardClaims: jwt.StandardClaims{
-	// 		// In JWT, the expiry time is expressed as unix milliseconds
-	// 		ExpiresAt: expirationTime.Unix(),
-	// 	},
-	// }
-	// token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	// tokenString, err := token.SignedString("etfetreztr")
-	// if err != nil {
-	// 	// If there is an error in creating the JWT return an internal server error
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	return
-	// }
-	// http.SetCookie(w, &http.Cookie{
-	// 	Name:    "token",
-	// 	Value:   tokenString,
-	// 	Expires: expirationTime,
-	// })
+	// Create the token
+	expTime := time.Now().Add(time.Minute * 15)
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["email"] = user.Email
+	atClaims["exp"] = expTime.Unix()
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	token, err := at.SignedString([]byte("eirueiztuiretuire"))
+	fmt.Println(token)
+	if err != nil {
+		panic(err)
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:    "token",
+		Value:   token,
+		Expires: expTime,
+	})
+
 }
