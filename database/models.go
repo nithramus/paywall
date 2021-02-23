@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"log"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,7 +26,8 @@ func OpenMongoClient() *mongo.Client {
 		log.Fatal(err)
 	}
 
-	DatabaseCtx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	// DatabaseCtx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	DatabaseCtx, _ = context.WithCancel(context.Background())
 	err = client.Connect(DatabaseCtx)
 	if err != nil {
 		log.Fatal(err)

@@ -21,13 +21,18 @@ type Claims struct {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bearToken := r.Header.Get("token")
-		fmt.Println(bearToken)
+		var bearToken string
+		for _, cookie := range r.Cookies() {
+			if cookie.Name == "token" {
+				bearToken = cookie.Value
+			}
+		}
 		claims := &Claims{}
 		tkn, err := jwt.ParseWithClaims(bearToken, claims, func(token *jwt.Token) (interface{}, error) {
-			return "eirueiztuiretuire", nil
+			return []byte("eirueiztuiretuire"), nil
 		})
 		if err != nil {
+			fmt.Println(err)
 			if err == jwt.ErrSignatureInvalid {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
@@ -46,6 +51,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 }
 
 func Signup(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("test")
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -82,6 +88,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	loggingUser := database.User{}
 	err = json.Unmarshal(body, &loggingUser)
+	fmt.Println(loggingUser)
 	if err != nil {
 		log.Fatal(err)
 	}
