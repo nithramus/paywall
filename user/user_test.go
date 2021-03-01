@@ -39,7 +39,7 @@ import (
 // }
 
 func TestLogin(t *testing.T) {
-	user := database.User{Email: "baptiste@test.fr", Password: "test"}
+	user := database.User{Email: "baptiste@test.fr", Password: "testtest"}
 	parameters, _ := json.Marshal(user)
 	resp, err := http.Post("http://localhost:3001/signup", "application/json", bytes.NewBuffer(parameters))
 	if err != nil {
