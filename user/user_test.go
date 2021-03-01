@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"testing"
 
-	"../database"
+	"paywall/database"
 )
 
 // func TestBadLogin(t *testing.T) {

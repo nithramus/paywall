@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"../database"
+	"paywall/database"
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"

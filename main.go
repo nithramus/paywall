@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"runtime"
 
-	"./database"
-	"./user"
+	"paywall/database"
+	"paywall/user"
 	"github.com/gorilla/mux"
 )
 
