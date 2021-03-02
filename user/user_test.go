@@ -15,7 +15,7 @@ import (
 
 // func TestBadLogin(t *testing.T) {
 
-// 	resp, err := http.Post("http://localhost:3000/signup", "application/json", bytes.NewBuffer([]byte("{}")))
+// 	resp, err := http.Post("http://localhost:3001/signup", "application/json", bytes.NewBuffer([]byte("{}")))
 // 	if err != nil {
 // 		log.Fatal(err)
 // 	}
@@ -28,7 +28,7 @@ import (
 // func TestSuccessFullLogin(t *testing.T) {
 // 	user := database.User{Email: "baptiste", Password: "test"}
 // 	parameters, _ := json.Marshal(user)
-// 	resp, err := http.Post("http://localhost:3000/signup", "application/json", bytes.NewBuffer(parameters))
+// 	resp, err := http.Post("http://localhost:3001/signup", "application/json", bytes.NewBuffer(parameters))
 // 	if err != nil {
 // 		log.Fatal(err)
 // 	}
@@ -39,17 +39,17 @@ import (
 // }
 
 func TestLogin(t *testing.T) {
-
-	user := database.User{Email: "baptiste", Password: "test"}
+	user := database.User{Email: "baptiste@test.fr", Password: "testtest"}
 	parameters, _ := json.Marshal(user)
-	resp, err := http.Post("http://localhost:3000/signup", "application/json", bytes.NewBuffer(parameters))
+	resp, err := http.Post("http://localhost:3001/signup", "application/json", bytes.NewBuffer(parameters))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if resp.StatusCode != http.StatusOK {
+		fmt.Println(resp.StatusCode)
 		t.Fatal("Wrong status code")
 	}
-	resp, err = http.Post("http://localhost:3000/login", "application/json", bytes.NewBuffer(parameters))
+	resp, err = http.Post("http://localhost:3001/login", "application/json", bytes.NewBuffer(parameters))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,15 +69,17 @@ func TestLogin(t *testing.T) {
 		Value: jwtToken,
 	}
 	cookies = append(cookies, cookie)
-	u, _ := url.Parse("http://localhost:300")
+	u, _ := url.Parse("http://localhost:3001")
 	jar.SetCookies(u, cookies)
 	client := &http.Client{
 		Jar: jar,
 	}
-	client.Get("http://localhost:3000/articles/list")
-	ioutil.ReadAll(resp.Body)
+	resp, err = client.Get("http://localhost:3001/articles/list")
 	if resp.StatusCode != http.StatusOK {
+		fmt.Println(resp.StatusCode)
+
 		t.Fatal("Wrong status code")
 	}
+	ioutil.ReadAll(resp.Body)
 
 }

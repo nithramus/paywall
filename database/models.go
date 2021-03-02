@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"log"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,11 +11,19 @@ import (
 
 // var ctx context
 var UserModel *mongo.Collection
+var SiteModel *mongo.Collection
 
 type User struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty"`
 	Email    string             `json:"email"`
 	Password string             `json:"password"`
+}
+
+type Site struct {
+	ID         primitive.ObjectID `bson:"_id,omitempty"`
+	UserID     string             `bson:"userId"`
+	Name       string             `json:"name"`
+	WebsiteUrl string             `json: websiteUrl`
 }
 
 var DatabaseCtx context.Context
@@ -27,13 +34,15 @@ func OpenMongoClient() *mongo.Client {
 		log.Fatal(err)
 	}
 
-	DatabaseCtx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	// DatabaseCtx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	DatabaseCtx, _ = context.WithCancel(context.Background())
 	err = client.Connect(DatabaseCtx)
 	if err != nil {
 		log.Fatal(err)
 	}
 	quickstart := client.Database("quickstart")
 	UserModel = quickstart.Collection("users")
+	SiteModel = quickstart.Collection("sites")
 	return client
 	// defer client.Disconnect(DatabaseCtx)
 }

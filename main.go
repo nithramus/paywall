@@ -8,7 +8,9 @@ import (
 	"runtime"
 
 	"paywall/database"
+	"paywall/sites"
 	"paywall/user"
+
 	"github.com/gorilla/mux"
 )
 
@@ -16,12 +18,12 @@ func getArticle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["id"]
 	fmt.Printf(key, "test")
+	fmt.Fprintf(w, "nike la police")
 }
 
 func RecoverWrap(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var err error
-
 		defer func() {
 			r := recover()
 			if r != nil {
@@ -57,12 +59,12 @@ func handleRequest() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.Use(RecoverWrap)
 	user.GetUserRouter(myRouter)
-	s := myRouter.PathPrefix("/articles").Subrouter()
-
-	s.Use(user.AuthMiddleware)
-	s.HandleFunc("/articles/list", getArticle)
+	sites.SiteRouter(myRouter)
 	mw := LogMiddleware(myRouter)
-	http.ListenAndServe(":3001", mw)
+	err := http.ListenAndServe(":3001", mw)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {

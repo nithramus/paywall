@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"paywall/database"
+
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
@@ -21,13 +23,22 @@ type Claims struct {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bearToken := r.Header.Get("token")
-		fmt.Println(bearToken)
-		claims := &Claims{}
+		type MyCustomClaims struct {
+			Id string `json:"id"`
+			jwt.StandardClaims
+		}
+		var bearToken string
+		for _, cookie := range r.Cookies() {
+			if cookie.Name == "token" {
+				bearToken = cookie.Value
+			}
+		}
+		claims := &MyCustomClaims{}
 		tkn, err := jwt.ParseWithClaims(bearToken, claims, func(token *jwt.Token) (interface{}, error) {
-			return "eirueiztuiretuire", nil
+			return []byte("eirueiztuiretuire"), nil
 		})
 		if err != nil {
+			fmt.Println(err)
 			if err == jwt.ErrSignatureInvalid {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
@@ -41,11 +52,14 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 		// http.Error(w, "Invalid Auth", http.StatusUnauthorized)
 
+		ctx := context.WithValue(context.Background(), "user", claims.Id)
+		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})
 }
 
 func Signup(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("test")
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -103,11 +117,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	expTime := time.Now().Add(time.Minute * 15)
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
+	atClaims["id"] = user.ID
 	atClaims["email"] = user.Email
 	atClaims["exp"] = expTime.Unix()
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	token, err := at.SignedString([]byte("eirueiztuiretuire"))
-	fmt.Println(token)
 	if err != nil {
 		panic(err)
 	}
