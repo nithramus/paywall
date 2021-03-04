@@ -20,11 +20,11 @@ type User struct {
 }
 
 type Site struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty"`
-	UserID     string             `bson:"userId"`
+	ID         primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	UserID     string             `json:"userId" bson:"userId"`
 	Name       string             `json:"name"`
 	WebsiteUrl string             `json: websiteUrl`
-	Deleted    bool               `json: Deleted`
+	Deleted    bool               `json: deleted`
 }
 
 var DatabaseCtx context.Context

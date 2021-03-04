@@ -36,16 +36,12 @@ func RecoverWrap(next http.Handler) http.Handler {
 				default:
 					err = errors.New("Unknown error")
 				}
-
 				_, fn, line, _ := runtime.Caller(2)
 				log.Printf("[error] %s:%d %v", fn, line, err)
-
 				_, fn, line, _ = runtime.Caller(0)
 				log.Printf("[error] %s:%d %v", fn, line, err)
-
 				http.Error(w, "Internal serveur error", http.StatusInternalServerError)
 			}
-
 		}()
 		next.ServeHTTP(w, r)
 	})
@@ -54,6 +50,8 @@ func RecoverWrap(next http.Handler) http.Handler {
 func LogMiddleware(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
 		vars := mux.Vars(r)
 		fmt.Println(vars)
 		fmt.Println(r.Method, r.URL)

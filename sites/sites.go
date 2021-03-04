@@ -15,11 +15,11 @@ import (
 )
 
 func GetSites(w http.ResponseWriter, r *http.Request) {
-	// userID := r.Context().Value("user").(string)
+	userID := r.Context().Value("userId").(string)
 	var sites []database.Site
-	cursor, err := database.SiteModel.Find(database.DatabaseCtx, bson.M{"Deleted": false})
+	cursor, err := database.SiteModel.Find(database.DatabaseCtx, bson.M{"deleted": false, "userId": userID})
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err = cursor.All(database.DatabaseCtx, &sites); err != nil {
 		log.Fatal(err)

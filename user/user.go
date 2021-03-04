@@ -117,7 +117,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Create the token
-	expTime := time.Now().Add(time.Minute * 15)
+	expTime := time.Now().Add(time.Minute * 60 * 24 * 300)
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["id"] = user.ID
