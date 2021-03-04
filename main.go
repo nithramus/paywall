@@ -40,6 +40,9 @@ func RecoverWrap(next http.Handler) http.Handler {
 				_, fn, line, _ := runtime.Caller(2)
 				log.Printf("[error] %s:%d %v", fn, line, err)
 
+				_, fn, line, _ = runtime.Caller(0)
+				log.Printf("[error] %s:%d %v", fn, line, err)
+
 				http.Error(w, "Internal serveur error", http.StatusInternalServerError)
 			}
 
@@ -49,14 +52,17 @@ func RecoverWrap(next http.Handler) http.Handler {
 }
 
 func LogMiddleware(next http.Handler) http.Handler {
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		fmt.Println(vars)
 		fmt.Println(r.Method, r.URL)
 		next.ServeHTTP(w, r)
 	})
 }
 
 func handleRequest() {
-	myRouter := mux.NewRouter().StrictSlash(true)
+	myRouter := mux.NewRouter()
 	myRouter.Use(RecoverWrap)
 	user.GetUserRouter(myRouter)
 	sites.SiteRouter(myRouter)

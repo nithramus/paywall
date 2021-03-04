@@ -12,6 +12,7 @@ import (
 	"paywall/database"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -23,6 +24,8 @@ type Claims struct {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		fmt.Println(vars)
 		type MyCustomClaims struct {
 			Id string `json:"id"`
 			jwt.StandardClaims
@@ -40,6 +43,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if err != nil {
 			fmt.Println(err)
 			if err == jwt.ErrSignatureInvalid {
+				fmt.Print("etresz")
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -47,20 +51,19 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		if !tkn.Valid {
+			fmt.Println("unauth")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		// http.Error(w, "Invalid Auth", http.StatusUnauthorized)
 
-		ctx := context.WithValue(context.Background(), "user", claims.Id)
+		ctx := context.WithValue(r.Context(), "userId", claims.Id)
+
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})
 }
 
 func Signup(w http.ResponseWriter, r *http.Request) {
-	fmt.Print("test")
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "can't read body", http.StatusBadRequest)

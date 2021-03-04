@@ -24,6 +24,7 @@ type Site struct {
 	UserID     string             `bson:"userId"`
 	Name       string             `json:"name"`
 	WebsiteUrl string             `json: websiteUrl`
+	Deleted    bool               `json: Deleted`
 }
 
 var DatabaseCtx context.Context
