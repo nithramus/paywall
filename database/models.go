@@ -11,7 +11,7 @@ import (
 
 // var ctx context
 var UserModel *mongo.Collection
-var SiteModel *mongo.Collection
+var OffreModel *mongo.Collection
 
 type User struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty"`
@@ -20,11 +20,23 @@ type User struct {
 }
 
 type Site struct {
-	ID         primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	UserID     string             `json:"userId" bson:"userId"`
-	Name       string             `json:"name"`
-	WebsiteUrl string             `json: websiteUrl`
-	Deleted    bool               `json: deleted`
+	WebOffreUrl string `json: webOffreUrl`
+}
+
+type Abonnement struct {
+}
+
+type Client struct {
+}
+
+type Offre struct {
+	ID          primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	UserID      string             `json:"userId" bson:"userId"`
+	Name        string             `json:"name"`
+	Deleted     bool               `json: deleted`
+	Sites       []Site
+	Abonnements []Abonnement
+	Clients     []Client
 }
 
 var DatabaseCtx context.Context
@@ -43,7 +55,7 @@ func OpenMongoClient() *mongo.Client {
 	}
 	quickstart := client.Database("quickstart")
 	UserModel = quickstart.Collection("users")
-	SiteModel = quickstart.Collection("sites")
+	OffreModel = quickstart.Collection("offres")
 	return client
 	// defer client.Disconnect(DatabaseCtx)
 }
