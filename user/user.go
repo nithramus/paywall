@@ -13,7 +13,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -82,7 +81,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Fail to hash password", http.StatusBadRequest)
 	}
 	newUser.Password = string(hashedPass)
-	_, err = database.UserModel.InsertOne(database.DatabaseCtx, newUser)
+	database.Db.Create(newUser)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -106,7 +105,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = database.UserModel.FindOne(database.DatabaseCtx, bson.M{"email": loggingUser.Email}).Decode(&user)
+	database.Db.First(&user, &database.User{Email: loggingUser.Email})
 
 	if err != nil {
 		panic(err)

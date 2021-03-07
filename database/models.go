@@ -1,61 +1,72 @@
 package database
 
 import (
-	"context"
 	"log"
+	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 // var ctx context
-var UserModel *mongo.Collection
-var OffreModel *mongo.Collection
+var Db *gorm.DB
 
 type User struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	Email    string             `json:"email"`
-	Password string             `json:"password"`
-}
-
-type Site struct {
-	WebOffreUrl string `json: webOffreUrl`
-}
-
-type Abonnement struct {
+	gorm.Model
+	ID        uint `gorm:"primaryKey"`
+	AccountID uint
+	Account   Account
+	Email     string `json:"email"`
+	Password  string `json:"password"`
 }
 
 type Client struct {
+	gorm.Model
+
+	ID               uint `gorm:"primaryKey"`
+	FirstName        string
+	LastName         string
+	SubscribedOffres []Offre   `gorm:"many2many:offer_clients;"`
+	CreatedAt        time.Time // Set to current time if it is zero on creating
+	UpdatedAt        int       // Set to current unix seconds on updaing or if it is zero on creating
+	Deleted          bool
+}
+type Site struct {
+	gorm.Model
+
+	ID          uint     `gorm:"primaryKey"`
+	WebOffreUrl string   `json: webOffreUrl`
+	Offres      []*Offre `gorm:"many2many:offer_sites;"`
+	AccountID   uint
 }
 
 type Offre struct {
-	ID          primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	UserID      string             `json:"userId" bson:"userId"`
-	Name        string             `json:"name"`
-	Deleted     bool               `json: deleted`
-	Sites       []Site
-	Abonnements []Abonnement
-	Clients     []Client
+	gorm.Model
+	ID      uint `gorm:"primaryKey"`
+	Price   float64
+	Deleted bool    `json: deleted`
+	Sites   []*Site `gorm:"many2many:offer_sites;"`
+
+	AccountID uint
 }
 
-var DatabaseCtx context.Context
+type Account struct {
+	gorm.Model
+	ID      uint `gorm:"primaryKey"`
+	Sites   []Site
+	Offres  []Offre
+	Deleted bool `json: deleted`
+}
 
-func OpenMongoClient() *mongo.Client {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://root:1234@localhost:27018/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false"))
+func InitDatabases() {
+	dsn := "root:1234ass@tcp(127.0.0.1:3306)/paywall?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// DatabaseCtx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	DatabaseCtx, _ = context.WithCancel(context.Background())
-	err = client.Connect(DatabaseCtx)
+	err = db.AutoMigrate(&User{})
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	quickstart := client.Database("quickstart")
-	UserModel = quickstart.Collection("users")
-	OffreModel = quickstart.Collection("offres")
-	return client
-	// defer client.Disconnect(DatabaseCtx)
+
 }
