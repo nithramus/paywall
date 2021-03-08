@@ -73,7 +73,6 @@ func handleRequest() {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	client := database.OpenMongoClient()
-	defer client.Disconnect(database.DatabaseCtx)
+	database.InitDatabases()
 	handleRequest()
 }

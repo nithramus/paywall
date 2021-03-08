@@ -59,7 +59,7 @@ type Account struct {
 }
 
 func InitDatabases() {
-	dsn := "root:1234ass@tcp(127.0.0.1:3306)/paywall?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:1234@tcp(127.0.0.1:3306)/paywall?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)

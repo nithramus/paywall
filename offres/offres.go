@@ -8,23 +8,18 @@ import (
 	"net/http"
 	"paywall/database"
 	"paywall/user"
+	"strconv"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func GetOffres(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userId").(string)
+	accountID := r.Context().Value("accountID").(uint)
 	var offres []database.Offre
 	offres = make([]database.Offre, 0)
-	cursor, err := database.OffreModel.Find(database.DatabaseCtx, bson.M{"deleted": false, "userId": userID})
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err = cursor.All(database.DatabaseCtx, &offres); err != nil {
-		log.Fatal(err)
-	}
+
+	database.Db.Where(&database.Offre{Deleted: false, AccountID: accountID}).Find(&offres)
+
 	jsonYolo, err := json.Marshal(offres)
 	if err != nil {
 		panic(err)
@@ -42,16 +37,15 @@ func AddOffre(w http.ResponseWriter, r *http.Request) {
 	}
 	offre := database.Offre{}
 	err = json.Unmarshal(body, &offre)
-	offre.UserID = r.Context().Value("userId").(string)
+	offre.AccountID = r.Context().Value("accountID").(uint)
 	if err != nil {
 		log.Fatal(err)
 	}
-	result, err := database.OffreModel.InsertOne(database.DatabaseCtx, offre)
-	if err != nil {
+	result := database.Db.Create(&offre)
+	if result.Error != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(*result)
-	data, _ := json.Marshal(*result)
+	data, _ := json.Marshal(offre)
 	fmt.Fprintf(w, string(data))
 }
 
@@ -67,12 +61,11 @@ func UpdateOffre(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	update := bson.M{"$set": offre}
 
-	id, _ := primitive.ObjectIDFromHex(vars["offreId"])
-	userId := r.Context().Value("userId").(string)
+	id, _ := strconv.ParseUint(vars["offreId"], 10, 64)
+	accountID := r.Context().Value("accountID").(uint)
+	result := database.Db.Model(&database.Offre{AccountID: accountID, ID: uint(id)}).Updates(&offre)
 
-	result, err := database.OffreModel.UpdateOne(database.DatabaseCtx, bson.M{"_id": id, "userId": userId}, update)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,11 +75,11 @@ func UpdateOffre(w http.ResponseWriter, r *http.Request) {
 
 func DeleteOffre(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, _ := primitive.ObjectIDFromHex(vars["offreId"])
-	offre := database.Offre{Deleted: true}
-	result, err := database.OffreModel.UpdateOne(database.DatabaseCtx, bson.M{"_id": id}, bson.M{"$set": offre})
-	if err != nil {
-		log.Fatal(err)
+	id, _ := strconv.ParseUint(vars["offreId"], 10, 64)
+	accountID := r.Context().Value("accountID").(uint)
+	result := database.Db.Model(&database.Offre{AccountID: accountID, ID: uint(id)}).Update("Deleted", true)
+	if result.Error != nil {
+		log.Fatal(result.Error)
 	}
 	data, _ := json.Marshal(result)
 	w.Write(data)

@@ -26,7 +26,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		vars := mux.Vars(r)
 		fmt.Println(vars)
 		type MyCustomClaims struct {
-			Id string `json:"id"`
+			Id        uint `json:"id"`
+			AccountID uint `json:"accountId"`
 			jwt.StandardClaims
 		}
 		var bearToken string
@@ -56,6 +57,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), "userId", claims.Id)
+		ctx = context.WithValue(ctx, "accountId", claims.AccountID)
 
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
@@ -105,8 +107,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	database.Db.First(&user, &database.User{Email: loggingUser.Email})
-
+	database.Db.Where("email = ?", loggingUser.Email).First(&user)
+	var account database.Account
+	database.Db.First(&account, user.ID)
 	if err != nil {
 		panic(err)
 	}
@@ -120,6 +123,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["id"] = user.ID
+	atClaims["accountId"] = account.ID
 	atClaims["email"] = user.Email
 	atClaims["exp"] = expTime.Unix()
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
