@@ -14,7 +14,7 @@ import (
 )
 
 func GetOffres(w http.ResponseWriter, r *http.Request) {
-	accountID := r.Context().Value("accountID").(uint)
+	accountID := r.Context().Value("accountId").(uint)
 	var offres []database.Offre
 	offres = make([]database.Offre, 0)
 
@@ -37,7 +37,7 @@ func AddOffre(w http.ResponseWriter, r *http.Request) {
 	}
 	offre := database.Offre{}
 	err = json.Unmarshal(body, &offre)
-	offre.AccountID = r.Context().Value("accountID").(uint)
+	offre.AccountID = r.Context().Value("accountId").(uint)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func UpdateOffre(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, _ := strconv.ParseUint(vars["offreId"], 10, 64)
-	accountID := r.Context().Value("accountID").(uint)
+	accountID := r.Context().Value("accountId").(uint)
 	result := database.Db.Model(&database.Offre{AccountID: accountID, ID: uint(id)}).Updates(&offre)
 
 	if err != nil {
@@ -76,7 +76,7 @@ func UpdateOffre(w http.ResponseWriter, r *http.Request) {
 func DeleteOffre(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseUint(vars["offreId"], 10, 64)
-	accountID := r.Context().Value("accountID").(uint)
+	accountID := r.Context().Value("accountId").(uint)
 	result := database.Db.Model(&database.Offre{AccountID: accountID, ID: uint(id)}).Update("Deleted", true)
 	if result.Error != nil {
 		log.Fatal(result.Error)

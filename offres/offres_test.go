@@ -9,9 +9,8 @@ import (
 	"net/http"
 	"paywall/database"
 	"paywall/test"
+	"strconv"
 	"testing"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestGetOffres(t *testing.T) {
@@ -36,14 +35,11 @@ func TestGetOffres(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var result map[string]string
 
-	json.Unmarshal(body, &result)
-	fmt.Println(result["InsertedID"])
-	id, _ := primitive.ObjectIDFromHex(result["InsertedID"])
-	offre = database.Offre{ID: id, Name: "##############"}
+	json.Unmarshal(body, &offre)
+	offre = database.Offre{ID: offre.ID, Name: "##############"}
 	params, _ = json.Marshal(offre)
-	req, err := http.NewRequest("PUT", "http://localhost:3001/offres/"+result["InsertedID"], bytes.NewReader(params))
+	req, err := http.NewRequest("PUT", "http://localhost:3001/offres/"+strconv.FormatUint(uint64(offre.ID), 10), bytes.NewReader(params))
 
 	if err != nil {
 		t.Fatal(err)
@@ -55,7 +51,7 @@ func TestGetOffres(t *testing.T) {
 	body, _ = ioutil.ReadAll(resp.Body)
 	fmt.Println(body)
 
-	req, err = http.NewRequest("DELETE", "http://localhost:3001/offres/"+result["InsertedID"], nil)
+	req, err = http.NewRequest("DELETE", "http://localhost:3001/offres/"+strconv.FormatUint(uint64(offre.ID), 10), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
