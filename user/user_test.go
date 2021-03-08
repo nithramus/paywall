@@ -74,7 +74,7 @@ func TestLogin(t *testing.T) {
 	client := &http.Client{
 		Jar: jar,
 	}
-	resp, err = client.Get("http://localhost:3001/articles/list")
+	resp, err = client.Get("http://localhost:3001/offres")
 	if resp.StatusCode != http.StatusOK {
 		fmt.Println(resp.StatusCode)
 

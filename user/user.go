@@ -82,9 +82,15 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(errr)
 		http.Error(w, "Fail to hash password", http.StatusBadRequest)
 	}
+	fmt.Println(newUser)
 	newUser.Password = string(hashedPass)
-	database.Db.Create(newUser)
-	if err != nil {
+	newAccount := &database.Account{}
+	database.Db.Create(&newAccount)
+	newUser.Account = *newAccount
+	result := database.Db.Create(&newUser)
+	fmt.Println("here")
+	fmt.Println(result)
+	if result.Error != nil {
 		log.Fatal(err)
 	}
 	fmt.Fprintf(w, "")
@@ -107,23 +113,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	database.Db.Where("email = ?", loggingUser.Email).First(&user)
-	var account database.Account
-	database.Db.First(&account, user.ID)
-	if err != nil {
-		panic(err)
-	}
-
+	database.Db.Joins("Account").Where("email = ?", loggingUser.Email).First(&user)
 	if string(hashedPass) != user.Password && loggingUser.Email != user.Email {
 		http.Error(w, "Bad password or email", http.StatusBadRequest)
 		return
 	}
+
 	// Create the token
 	expTime := time.Now().Add(time.Minute * 60 * 24 * 300)
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["id"] = user.ID
-	atClaims["accountId"] = account.ID
+	atClaims["accountId"] = user.Account.ID
 	atClaims["email"] = user.Email
 	atClaims["exp"] = expTime.Unix()
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
