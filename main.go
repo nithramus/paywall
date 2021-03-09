@@ -9,6 +9,7 @@ import (
 
 	"paywall/database"
 	"paywall/offres"
+	"paywall/sites"
 	"paywall/user"
 
 	"github.com/gorilla/mux"
@@ -63,7 +64,11 @@ func handleRequest() {
 	myRouter := mux.NewRouter()
 	myRouter.Use(RecoverWrap)
 	user.GetUserRouter(myRouter)
-	offres.OffreRouter(myRouter)
+
+	authRouter := myRouter.PathPrefix("").Subrouter()
+	authRouter.Use(user.AuthMiddleware)
+	sites.SiteRouter(authRouter)
+	offres.OffreRouter(authRouter)
 	mw := LogMiddleware(myRouter)
 	err := http.ListenAndServe(":3001", mw)
 	if err != nil {

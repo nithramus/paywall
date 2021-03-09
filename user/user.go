@@ -12,7 +12,6 @@ import (
 	"paywall/database"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,16 +22,16 @@ type Claims struct {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		fmt.Println(vars)
+
 		type MyCustomClaims struct {
 			Id        uint `json:"id"`
-			AccountID uint `json:"accountId"`
+			AccountID uint `json:"accountID"`
 			jwt.StandardClaims
 		}
 		var bearToken string
 		for _, cookie := range r.Cookies() {
 			if cookie.Name == "token" {
+
 				bearToken = cookie.Value
 			}
 		}
@@ -43,7 +42,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if err != nil {
 			fmt.Println(err)
 			if err == jwt.ErrSignatureInvalid {
-				fmt.Print("etresz")
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -57,7 +55,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), "userId", claims.Id)
-		ctx = context.WithValue(ctx, "accountId", claims.AccountID)
+		ctx = context.WithValue(ctx, "accountID", claims.AccountID)
 
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
@@ -124,7 +122,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["id"] = user.ID
-	atClaims["accountId"] = user.Account.ID
+	atClaims["accountID"] = user.Account.ID
 	atClaims["email"] = user.Email
 	atClaims["exp"] = expTime.Unix()
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)

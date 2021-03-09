@@ -34,28 +34,50 @@ type Client struct {
 type Site struct {
 	gorm.Model
 
-	ID          uint     `gorm:"primaryKey"`
+	ID          uint `gorm:"primaryKey"`
+	Name        string
 	WebOffreUrl string   `json: webOffreUrl`
 	Offres      []*Offre `gorm:"many2many:offer_sites;"`
 	AccountID   uint
+	Deleted     bool
+}
+
+type Rule struct {
+	gorm.Model
+	ID uint `gorm:"primaryKey"`
+}
+
+type Protection struct {
+	gorm.Model
+	ID      uint `gorm:"primaryKey"`
+	Rules   []Rule
+	Deleted bool
 }
 
 type Offre struct {
 	gorm.Model
-	ID      uint `gorm:"primaryKey"`
-	Price   float64
-	Deleted bool    `json: deleted`
-	Sites   []*Site `gorm:"many2many:offer_sites;"`
+	ID        uint `gorm:"primaryKey"`
+	Name      string
+	Price     float64
+	Frequency string
+
+	Title       string
+	Description string
+	Icon        string
+
+	Sites []*Site `gorm:"many2many:offer_sites;"`
 
 	AccountID uint
+	Deleted   bool
 }
 
 type Account struct {
 	gorm.Model
 	ID      uint `gorm:"primaryKey"`
+	Name    string
 	Sites   []Site
 	Offres  []Offre
-	Deleted bool `json: deleted`
+	Deleted bool
 }
 
 func InitDatabases() {
@@ -64,9 +86,16 @@ func InitDatabases() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = db.AutoMigrate(&User{})
+	err = db.AutoMigrate(
+		&User{},
+		&Client{},
+		&Site{},
+		&Offre{},
+		&Account{},
+	)
 	if err != nil {
 		panic(err)
 	}
+	Db = db
 
 }
