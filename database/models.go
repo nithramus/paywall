@@ -59,6 +59,7 @@ type Protection struct {
 type Offre struct {
 	gorm.Model
 	ID        uint `gorm:"primaryKey"`
+	Activated bool
 	Name      string
 	Price     float64
 	Frequency string

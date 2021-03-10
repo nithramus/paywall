@@ -15,7 +15,7 @@ import (
 func GetSites(w http.ResponseWriter, r *http.Request) {
 	accountID := r.Context().Value("accountID").(uint)
 	var sites []database.Site
-	database.Db.Where(&database.Site{AccountID: accountID}).Find(&sites)
+	database.Db.Where(&database.Site{AccountID: accountID}).Preload("Offres").Find(&sites)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(sites)
 }
@@ -63,6 +63,19 @@ func DeleteSite(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(nil)
 }
 
+func AddOffreToSite(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	offreID, _ := strconv.ParseUint(vars["offreID"], 10, 64)
+	siteID, _ := strconv.ParseUint(vars["siteID"], 10, 64)
+	fmt.Println(siteID, offreID)
+	err := database.Db.Model(&database.Site{ID: uint(siteID)}).Association("Offres").Append([]database.Offre{{ID: uint(offreID)}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(nil)
+}
+
 func SiteRouter(router *mux.Router) {
 	s := router.PathPrefix("/sites").Subrouter()
 
@@ -70,4 +83,5 @@ func SiteRouter(router *mux.Router) {
 	s.HandleFunc("", AddSite).Methods("POST")
 	s.HandleFunc("/{siteID}", UpdateSite).Methods("PUT")
 	s.HandleFunc("/{siteID}", DeleteSite).Methods("DELETE")
+	s.HandleFunc("/{siteID}/offre/{offreID}", AddOffreToSite).Methods("POST")
 }
