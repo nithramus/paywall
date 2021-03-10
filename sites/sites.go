@@ -2,6 +2,7 @@ package sites
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -38,16 +39,18 @@ func UpdateSite(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	accountID := r.Context().Value("accountID").(uint)
-	var site database.Site
+	// var site database.Site
 	body, _ := ioutil.ReadAll(r.Body)
-	err := json.Unmarshal(body, &site)
+	var siteMap map[string]interface{}
+	err := json.Unmarshal(body, &siteMap)
+	fmt.Println(siteMap)
 	if err != nil {
 		log.Fatal(err)
 	}
 	id, _ := strconv.ParseUint(vars["siteID"], 10, 64)
-	database.Db.Model(&database.Site{AccountID: accountID, ID: uint(id)}).Updates(&site)
+	database.Db.Model(&database.Site{AccountID: accountID, ID: uint(id)}).Updates(&siteMap)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(site)
+	json.NewEncoder(w).Encode(siteMap)
 }
 
 func DeleteSite(w http.ResponseWriter, r *http.Request) {

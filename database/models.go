@@ -34,12 +34,14 @@ type Client struct {
 type Site struct {
 	gorm.Model
 
-	ID          uint `gorm:"primaryKey"`
-	Name        string
-	WebOffreUrl string   `json: webOffreUrl`
-	Offres      []*Offre `gorm:"many2many:offer_sites;"`
-	AccountID   uint
-	Deleted     bool
+	ID         uint `gorm:"primaryKey"`
+	Activated  bool
+	Name       string
+	WebSiteURL string
+	Icon       string
+	Offres     []*Offre `gorm:"many2many:offer_sites;"`
+	AccountID  uint
+	Deleted    bool
 }
 
 type Rule struct {
