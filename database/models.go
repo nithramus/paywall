@@ -34,26 +34,30 @@ type Client struct {
 type Site struct {
 	gorm.Model
 
-	ID         uint `gorm:"primaryKey"`
-	Activated  bool
-	Name       string
-	WebSiteURL string
-	Icon       string
-	Offres     []*Offre `gorm:"many2many:offer_sites;"`
-	AccountID  uint
-	Deleted    bool
+	ID           uint `gorm:"primaryKey"`
+	Activated    bool
+	Name         string
+	WebSiteURL   string
+	Icon         string
+	Offres       []*Offre `gorm:"many2many:offer_sites;"`
+	AccountID    uint
+	AccessRuless []AccessRules
+	Deleted      bool
 }
 
 type Rule struct {
 	gorm.Model
-	ID uint `gorm:"primaryKey"`
+	ID            uint `gorm:"primaryKey"`
+	AccessRulesID uint
 }
 
-type Protection struct {
+type AccessRules struct {
 	gorm.Model
-	ID      uint `gorm:"primaryKey"`
-	Rules   []Rule
+	ID uint `gorm:"primaryKey"`
+	// Rules   []Rule
+	SiteID  uint
 	Deleted bool
+	Offres  []*Offre `gorm:"many2many:accessrules_offre;"`
 }
 
 type Offre struct {
@@ -68,10 +72,10 @@ type Offre struct {
 	Description string
 	Icon        string
 
-	Sites []*Site `gorm:"many2many:offer_sites;"`
-
-	AccountID uint
-	Deleted   bool
+	AccessRuless []*AccessRules `gorm:"many2many:accessrules_offre;"`
+	Sites        []*Site        `gorm:"many2many:offer_sites;"`
+	AccountID    uint
+	Deleted      bool
 }
 
 type Account struct {
@@ -90,6 +94,8 @@ func InitDatabases() {
 		log.Fatal(err)
 	}
 	err = db.AutoMigrate(
+		// &Rule{},
+		&AccessRules{},
 		&User{},
 		&Client{},
 		&Site{},
