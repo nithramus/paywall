@@ -17,7 +17,7 @@ func GetOffres(w http.ResponseWriter, r *http.Request) {
 	var offres []database.Offre
 	offres = make([]database.Offre, 0)
 
-	database.Db.Where(&database.Offre{Deleted: false, AccountID: accountID}).Find(&offres)
+	database.Db.Where(&database.Offre{Deleted: false, AccountID: accountID}).Preload("Sites").Find(&offres)
 
 	jsonYolo, err := json.Marshal(offres)
 	if err != nil {

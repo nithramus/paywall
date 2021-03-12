@@ -20,6 +20,18 @@ func GetSites(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(sites)
 }
 
+func GetSite(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	accountID := r.Context().Value("accountID").(uint)
+	id, _ := strconv.ParseUint(vars["siteID"], 10, 64)
+
+	var site database.Site
+	database.Db.Where(&database.Site{AccountID: accountID, ID: uint(id)}).Preload("Offres").First(&site)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(site)
+}
+
 func AddSite(w http.ResponseWriter, r *http.Request) {
 	var site database.Site
 
@@ -76,12 +88,27 @@ func AddOffreToSite(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(nil)
 }
 
+func RemoveOffreFromSite(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	offreID, _ := strconv.ParseUint(vars["offreID"], 10, 64)
+	siteID, _ := strconv.ParseUint(vars["siteID"], 10, 64)
+	fmt.Println(siteID, offreID)
+	err := database.Db.Model(&database.Site{ID: uint(siteID)}).Association("Offres").Delete([]database.Offre{{ID: uint(offreID)}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(nil)
+}
+
 func SiteRouter(router *mux.Router) {
 	s := router.PathPrefix("/sites").Subrouter()
 
 	s.HandleFunc("", GetSites).Methods("GET")
 	s.HandleFunc("", AddSite).Methods("POST")
+	s.HandleFunc("/{siteID}", GetSite).Methods("GET")
 	s.HandleFunc("/{siteID}", UpdateSite).Methods("PUT")
 	s.HandleFunc("/{siteID}", DeleteSite).Methods("DELETE")
 	s.HandleFunc("/{siteID}/offre/{offreID}", AddOffreToSite).Methods("POST")
+	s.HandleFunc("/{siteID}/offre/{offreID}", RemoveOffreFromSite).Methods("DELETE")
 }
