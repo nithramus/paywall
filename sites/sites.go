@@ -43,9 +43,9 @@ func AddSite(w http.ResponseWriter, r *http.Request) {
 	}
 	site.AccountID = accountID
 	database.Db.Create(&site)
-	offre := database.Offre{Name: "Default", AccountID: accountID}
+	offre := database.Offre{Name: "Default", AccountID: accountID, IsDefault: true}
 	database.Db.Create(&offre)
-	accessRule := database.AccessRule{SiteID: site.ID, Name: "Default"}
+	accessRule := database.AccessRule{SiteID: site.ID, Name: "Default", IsDefault: true}
 	database.Db.Create(&accessRule)
 
 	err = database.Db.Model(&site).Association("Offres").Append(&offre)

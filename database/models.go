@@ -70,6 +70,7 @@ type Offre struct {
 	AccessRules []*AccessRule `gorm:"many2many:accessrules_offre;"`
 	Sites       []*Site       `gorm:"many2many:offer_sites;"`
 	AccountID   uint
+	IsDefault   bool
 	Deleted     bool
 }
 
