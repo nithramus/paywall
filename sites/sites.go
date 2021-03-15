@@ -43,6 +43,20 @@ func AddSite(w http.ResponseWriter, r *http.Request) {
 	}
 	site.AccountID = accountID
 	database.Db.Create(&site)
+	offre := database.Offre{Name: "Default", AccountID: accountID}
+	database.Db.Create(&offre)
+	accessRule := database.AccessRule{SiteID: site.ID, Name: "Default"}
+	database.Db.Create(&accessRule)
+
+	err = database.Db.Model(&site).Association("Offres").Append(&offre)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = database.Db.Model(&offre).Association("AccessRules").Append(&accessRule)
+	if err != nil {
+		log.Fatal(err)
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(site)
 }

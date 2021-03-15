@@ -63,7 +63,7 @@ func LogMiddleware(next http.Handler) http.Handler {
 
 func handleRequest() {
 	myRouter := mux.NewRouter()
-	myRouter.Use(RecoverWrap)
+	// myRouter.Use(RecoverWrap)
 	user.GetUserRouter(myRouter)
 
 	authRouter := myRouter.PathPrefix("").Subrouter()
