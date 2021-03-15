@@ -9,6 +9,7 @@ import (
 
 	"paywall/database"
 	"paywall/offres"
+	"paywall/rules"
 	"paywall/sites"
 	"paywall/user"
 
@@ -69,6 +70,7 @@ func handleRequest() {
 	authRouter.Use(user.AuthMiddleware)
 	sites.SiteRouter(authRouter)
 	offres.OffreRouter(authRouter)
+	rules.RuleRouter(authRouter)
 	mw := LogMiddleware(myRouter)
 	err := http.ListenAndServe(":3001", mw)
 	if err != nil {

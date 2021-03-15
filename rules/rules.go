@@ -1,4 +1,4 @@
-package AccessRules
+package rules
 
 import (
 	"encoding/json"
@@ -20,10 +20,6 @@ func GetRules(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(rules)
 }
-
-// func GetRule(w http.ResponseWriter, r *http.Request) {
-
-// }
 
 func AddRule(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -52,7 +48,7 @@ func UpdateRule(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	id, _ := strconv.ParseUint(vars["ruleID"], 10, 64)
-	database.Db.Model(&database.AccessRule{SiteID: siteID, ID: uint(id)}).Updates(&siteMap)
+	database.Db.Model(&database.AccessRule{SiteID: uint(siteID), ID: uint(id)}).Updates(&siteMap)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(siteMap)
 }
@@ -66,7 +62,7 @@ func DeleteRule(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(nil)
 }
 
-func AddOffreToRule(w http.ResponseWriter, r *http.Request) {
+func AddRuleToOffre(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	offreID, _ := strconv.ParseUint(vars["offreID"], 10, 64)
 	siteID, _ := strconv.ParseUint(vars["siteID"], 10, 64)
@@ -79,7 +75,7 @@ func AddOffreToRule(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(nil)
 }
 
-func RemoveOffreFromRule(w http.ResponseWriter, r *http.Request) {
+func RemoveRuleFromOffre(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	offreID, _ := strconv.ParseUint(vars["offreID"], 10, 64)
 	siteID, _ := strconv.ParseUint(vars["siteID"], 10, 64)
@@ -100,6 +96,6 @@ func RuleRouter(router *mux.Router) {
 	// s.HandleFunc("/{ruleID}/site/{siteID}", GetRule).Methods("GET")
 	s.HandleFunc("/{ruleID}/site/{siteID}", UpdateRule).Methods("PUT")
 	s.HandleFunc("/{ruleID}/site/{siteID}", DeleteRule).Methods("DELETE")
-	s.HandleFunc("/{ruleID}/site/{siteID}/offre/{offreID}", AddOffreToRule).Methods("POST")
-	s.HandleFunc("/{ruleID}/site/{siteID}/offre/{offreID}", RemoveOffreFromRule).Methods("DELETE")
+	s.HandleFunc("/{ruleID}/site/{siteID}/offre/{offreID}", AddRuleToOffre).Methods("POST")
+	s.HandleFunc("/{ruleID}/site/{siteID}/offre/{offreID}", RemoveRuleFromOffre).Methods("DELETE")
 }

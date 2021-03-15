@@ -47,10 +47,12 @@ type Site struct {
 
 type AccessRule struct {
 	gorm.Model
-	ID      uint `gorm:"primaryKey"`
-	SiteID  uint
-	Offres  []*Offre `gorm:"many2many:accessrules_offre;"`
-	Deleted bool
+	ID        uint `gorm:"primaryKey"`
+	SiteID    uint
+	Name      string
+	Offres    []*Offre `gorm:"many2many:accessrules_offre;"`
+	IsDefault bool
+	Deleted   bool
 }
 
 type Offre struct {
